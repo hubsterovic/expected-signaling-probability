@@ -1,0 +1,3 @@
+# Expected Signaling Probability
+$$ \mathcal{S}_{A \to B} = \text{D}_{\text{Tr}}(\text{Tr}_A\left[ \mathcal{E}_{AB}(\rho_{AB})\right], \text{Tr}_A\left[ \mathcal{E}_{AB}(\mathcal{A}_A(\rho_{AB}))\right]) $$
+$$\langle \mathcal{S} \rangle_{A \to B} = \underset{\rho,\mathcal{E}, \mathcal{A}}{\mathbb{E}} \Big[ \text{D}_{\text{Tr}}(\text{Tr}_A\left[ \mathcal{E}_{AB}(\rho_{AB})\right], \text{Tr}_A\left[ \mathcal{E}_{AB}(\mathcal{A}_A(\rho_{AB}))\right])  \Big]$$
