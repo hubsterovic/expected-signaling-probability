@@ -32,32 +32,32 @@ def compute_signaling_probability(
     return tr_dist
 
 
-def generate_random_dm(d_A: int, d_B: int, seed: int = 42) -> qt.Qobj:
-    random_dm = qt.rand_dm(dimensions=[d_A, d_B], seed=seed)
+def generate_random_dm(d_A: int, d_B: int, _seed: int | None = None) -> qt.Qobj:
+    random_dm = qt.rand_dm(dimensions=[d_A, d_B], seed=_seed) # type: ignore
     return random_dm
 
 
-def generate_random_superoperator(d_A: int, d_B: int, seed: int = 42) -> qt.Qobj:
-    return qt.rand_super_bcsz([d_A, d_B], seed=seed)
+def generate_random_superoperator(d_A: int, d_B: int, _seed: int | None = None) -> qt.Qobj:
+    return qt.rand_super_bcsz([d_A, d_B], seed=_seed) # type: ignore
 
 
 def generate_random_local_superoperator(
-    d_A: int, d_B: int, direction: Direction, seed: int = 42
+    d_A: int, d_B: int, direction: Direction, _seed: int | None = None
 ) -> qt.Qobj:
     match direction:
         case Direction.A_TO_B:
             local_superoperator = qt.super_tensor(
-                qt.rand_super_bcsz(d_A, seed=seed), qt.to_super(qt.identity(d_B))
+                qt.rand_super_bcsz(d_A, seed=_seed), qt.to_super(qt.identity(d_B)) # type: ignore
             )
         case Direction.B_TO_A:
             local_superoperator = qt.super_tensor(
-                qt.to_super(qt.identity(d_A)), qt.rand_super_bcsz(d_B, seed=seed)
+                qt.to_super(qt.identity(d_A)), qt.rand_super_bcsz(d_B, seed=_seed) # type: ignore
             )
     return local_superoperator
 
 
 def expected_signaling_probability(
-    n_samples: int, d_A: int, d_B: int, direction: Direction, seed: int = 42
+    n_samples: int, d_A: int, d_B: int, direction: Direction, _seed: int = 0
 ) -> tuple[float, list[float]]:
     tr_dists: list[float] = []
     for _ in tqdm(
@@ -65,9 +65,10 @@ def expected_signaling_probability(
         desc=f"Computing <S>_{direction} ({d_A=}, {d_B=})",
         leave=False,
     ):
-        initial_state = generate_random_dm(d_A, d_B, seed)
-        local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed)
-        global_superoperator = generate_random_superoperator(d_A, d_B, seed)
+        _seed += 1
+        initial_state = generate_random_dm(d_A, d_B, _seed)
+        local_operation = generate_random_local_superoperator(d_A, d_B, direction, _seed)
+        global_superoperator = generate_random_superoperator(d_A, d_B, _seed)
         tr_dist = compute_signaling_probability(
             initial_state, local_operation, global_superoperator, direction
         )
