@@ -8,7 +8,7 @@ class Direction(Enum):
     B_TO_A = "B to A"
 
 
-def _direction_to_ptrace_index(direction: Direction):
+def _direction_to_ptrace_index(direction: Direction) -> int:
     return 0 if direction == Direction.A_TO_B else 1
 
 
@@ -32,6 +32,30 @@ def compute_signaling_probability(
     return tr_dist
 
 
+def generate_random_dm(d_A: int, d_B: int, seed: int = 42) -> qt.Qobj:
+    random_dm = qt.rand_dm(dimensions=[d_A, d_B], seed=seed)
+    return random_dm
+
+
+def generate_random_superoperator(d_A: int, d_B: int, seed: int = 42) -> qt.Qobj:
+    return qt.rand_super_bcsz([d_A, d_B], seed=seed)
+
+
+def generate_random_local_superoperator(
+    d_A: int, d_B: int, direction: Direction, seed: int = 42
+) -> qt.Qobj:
+    match direction:
+        case Direction.A_TO_B:
+            local_superoperator = qt.super_tensor(
+                qt.rand_super_bcsz(d_A, seed=seed), qt.to_super(qt.identity(d_B))
+            )
+        case Direction.B_TO_A:
+            local_superoperator = qt.super_tensor(
+                qt.to_super(qt.identity(d_A)), qt.rand_super_bcsz(d_B, seed=seed)
+            )
+    return local_superoperator
+
+
 def expected_signaling_probability(
     n_samples: int, d_A: int, d_B: int, direction: Direction, seed: int = 42
 ) -> tuple[float, list[float]]:
@@ -41,17 +65,9 @@ def expected_signaling_probability(
         desc=f"Computing <S>_{direction} ({d_A=}, {d_B=})",
         leave=False,
     ):
-        initial_state = qt.rand_dm(dimensions=[d_A, d_B], seed=seed)
-        if direction == Direction.A_TO_B:
-            print("uyay")
-            local_operation = qt.super_tensor(
-                qt.rand_super_bcsz(d_A), qt.to_super(qt.identity(d_B))
-            )
-        else:
-            local_operation = qt.super_tensor(
-                qt.to_super(qt.identity(d_A)), qt.rand_super_bcsz(d_B, seed=seed)
-            )
-        global_superoperator = qt.rand_super_bcsz([d_A, d_B], seed=seed)
+        initial_state = generate_random_dm(d_A, d_B, seed)
+        local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed)
+        global_superoperator = generate_random_superoperator(d_A, d_B, seed)
         tr_dist = compute_signaling_probability(
             initial_state, local_operation, global_superoperator, direction
         )
