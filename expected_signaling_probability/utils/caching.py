@@ -4,6 +4,7 @@ import json
 
 
 class Cache:
+    _MIN_DIM = 1
     def __init__(self, cache_dir: str = ".esp_cache"):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True)
@@ -14,6 +15,8 @@ class Cache:
         return f"dA{d_A}_dB{d_B}_{direction.to_str()}seed{seed}.json"
 
     def get(self, d_A: int, d_B: int, direction: Direction, seed: int) -> float | None:
+        if d_A < self._MIN_DIM and d_B < self._MIN_DIM:
+            return None
         filename = self._make_filename(d_A, d_B, direction, seed)
         cache_file = self.cache_dir / filename
 
@@ -28,6 +31,8 @@ class Cache:
         return None
 
     def set(self, d_A: int, d_B: int, direction: Direction, seed: int, value: float):
+        if d_A < self._MIN_DIM and d_B < self._MIN_DIM:
+            return
         filename = self._make_filename(d_A, d_B, direction, seed)
         cache_file = self.cache_dir / filename
 

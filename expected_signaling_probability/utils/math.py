@@ -2,6 +2,7 @@ from expected_signaling_probability.utils.directions import Direction
 from expected_signaling_probability.utils.caching import Cache
 from tqdm import tqdm
 import qutip as qt
+import numpy as np
 
 _CACHE = Cache()
 
@@ -81,7 +82,7 @@ def expected_signaling_probability(
     direction: Direction,
     cache: Cache | None = _CACHE,
     _initial_seed_state: int = 0,
-) -> tuple[float, list[float]]:
+) -> np.typing.NDArray:
     seed = _initial_seed_state
     tr_dists: list[float] = []
 
@@ -95,4 +96,4 @@ def expected_signaling_probability(
         tr_dist = _one_shot_signaling_probability(d_A, d_B, direction, seed, cache)
         tr_dists.append(tr_dist)
 
-    return sum(tr_dists) / n_samples, tr_dists
+    return np.array(tr_dists)
