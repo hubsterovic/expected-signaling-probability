@@ -19,9 +19,7 @@ def dims(request):
 def test_superoperator_supertensor_identity(dims):
     _, d_A, d_B = dims
     rho_AB = qt.rand_dm(dimensions=[d_A, d_B])
-    super_A_id_B = qt.super_tensor(
-        qt.rand_super_bcsz(d_A), qt.to_super(qt.identity(d_B))
-    )
+    super_A_id_B = qt.super_tensor(qt.rand_super_bcsz(d_A), qt.to_super(qt.identity(d_B)))
     assert super_A_id_B.type == "super"
 
     rho_B_original = qt.ptrace(rho_AB, 1)

@@ -18,6 +18,10 @@ dev = [
     "ruff>=0.13.1",
 ]
 
+[tool.ruff]
+line-length = 256
+
+
 [build-system]
 requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
