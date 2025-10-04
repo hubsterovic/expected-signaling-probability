@@ -15,9 +15,9 @@ class Stats:
     max: np.floating
     n: int
     samples: np.typing.NDArray
-    d_A: int | None = None
-    d_B: int | None = None
-    direction: Direction | None = None
+    d_A: int
+    d_B: int
+    direction: Direction
 
     def __str__(self) -> str:
         attrs = []

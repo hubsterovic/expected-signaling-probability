@@ -19,9 +19,7 @@ def compute_signaling_probability(
     final_altered_state = global_superoperator(altered_initial_state)
 
     reduced_final_state = qt.ptrace(final_state, direction.to_ptrace_index())
-    reduced_final_altered_state = qt.ptrace(
-        final_altered_state, direction.to_ptrace_index()
-    )
+    reduced_final_altered_state = qt.ptrace(final_altered_state, direction.to_ptrace_index())
 
     tr_dist = qt.tracedist(reduced_final_state, reduced_final_altered_state)
     return tr_dist
@@ -32,15 +30,11 @@ def generate_random_dm(d_A: int, d_B: int, seed: int | None = None) -> qt.Qobj:
     return random_dm
 
 
-def generate_random_superoperator(
-    d_A: int, d_B: int, seed: int | None = None
-) -> qt.Qobj:
+def generate_random_superoperator(d_A: int, d_B: int, seed: int | None = None) -> qt.Qobj:
     return qt.rand_super_bcsz([d_A, d_B], seed=seed)  # type: ignore
 
 
-def generate_random_local_superoperator(
-    d_A: int, d_B: int, direction: Direction, seed: int | None = None
-) -> qt.Qobj:
+def generate_random_local_superoperator(d_A: int, d_B: int, direction: Direction, seed: int | None = None) -> qt.Qobj:
     if direction == Direction.A_TO_B:
         local_superoperator = qt.super_tensor(
             qt.rand_super_bcsz(d_A, seed=seed),  # type: ignore
@@ -54,9 +48,7 @@ def generate_random_local_superoperator(
     return local_superoperator
 
 
-def _one_shot_signaling_probability(
-    d_A: int, d_B: int, direction: Direction, seed: int, cache: Cache | None = _CACHE
-) -> float:
+def _one_shot_signaling_probability(d_A: int, d_B: int, direction: Direction, seed: int, cache: Cache | None = _CACHE) -> float:
     if cache:
         cached_result = cache.get(d_A, d_B, direction, seed)
         if cached_result is not None:
@@ -65,9 +57,7 @@ def _one_shot_signaling_probability(
     initial_state = generate_random_dm(d_A, d_B, seed)
     local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed)
     global_superoperator = generate_random_superoperator(d_A, d_B, seed)
-    tr_dist = compute_signaling_probability(
-        initial_state, local_operation, global_superoperator, direction
-    )
+    tr_dist = compute_signaling_probability(initial_state, local_operation, global_superoperator, direction)
 
     if cache:
         cache.set(d_A, d_B, direction, seed, tr_dist)

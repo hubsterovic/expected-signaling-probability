@@ -5,13 +5,12 @@ import json
 
 class Cache:
     _MIN_DIM = 1
-    def __init__(self, cache_dir: str = ".esp_cache"):
+
+    def __init__(self, cache_dir: str = "data/.esp_cache"):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True)
 
-    def _make_filename(
-        self, d_A: int, d_B: int, direction: Direction, seed: int
-    ) -> str:
+    def _make_filename(self, d_A: int, d_B: int, direction: Direction, seed: int) -> str:
         return f"dA{d_A}_dB{d_B}_{direction.to_str()}seed{seed}.json"
 
     def get(self, d_A: int, d_B: int, direction: Direction, seed: int) -> float | None:

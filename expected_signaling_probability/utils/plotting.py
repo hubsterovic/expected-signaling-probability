@@ -1,5 +1,6 @@
-import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 import shutil
 import os
 
@@ -49,3 +50,15 @@ def apply_plot_style():
             }
         )
         print("[plot_styling] LaTeX not found. Using mathtext fallback.")
+
+
+class LatexStrings:
+    EXPECTED_SIGNALING_PROBABILITY_X_TO_Y = r"$\langle \mathcal{S} \rangle_{X \to Y}$"
+    EXPECTED_SIGNALING_PROBABILITY_A_TO_B = r"$\langle \mathcal{S} \rangle_{A \to B}$"
+    EXPECTED_SIGNALING_PROBABILITY_B_TO_A = r"$\langle \mathcal{S} \rangle_{B \to A}$"
+    SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY = r"$\langle \mathcal{S} \rangle$"
+
+    @classmethod
+    def n_samples_to_sci(cls, n: int) -> str:
+        p = np.log10(n)
+        return f"$10^{{{p:.0f}}}$"
