@@ -1,64 +1,89 @@
 from expected_signaling_probability.utils.directions import Direction
+from expected_signaling_probability.utils.params import ExtraParams
+from dataclasses import fields
 from pathlib import Path
-import json
+import pandas as pd
 
 
 class Cache:
-    _MIN_DIM = 1
-
-    def __init__(self, cache_dir: str = "data/.esp_cache"):
+    def __init__(self, cache_dir: str = "data/cache"):
         self.cache_dir = Path(cache_dir)
-        self.cache_dir.mkdir(exist_ok=True)
+        self.cache_dir.mkdir(exist_ok=True, parents=True)
 
-    def _make_filename(self, d_A: int, d_B: int, direction: Direction, seed: int) -> str:
-        return f"dA{d_A}_dB{d_B}_{direction.to_str()}seed{seed}.json"
+    def _make_filename(self, d_A: int, d_B: int, direction: Direction, extra_params: ExtraParams) -> str:
+        filename_parts = [f"dA={d_A}", f"dB={d_B}", f"direction={direction.to_str()}"]
 
-    def get(self, d_A: int, d_B: int, direction: Direction, seed: int) -> float | None:
-        if d_A < self._MIN_DIM and d_B < self._MIN_DIM:
-            return None
-        filename = self._make_filename(d_A, d_B, direction, seed)
-        cache_file = self.cache_dir / filename
+        for field in fields(extra_params):
+            value = getattr(extra_params, field.name)
+            if value is not None:
+                filename_parts.append(f"{field.name}={value}")
 
+        return " ".join(filename_parts) + ".csv"
+
+    def _load_or_create_dataframe(self, cache_file: Path) -> pd.DataFrame:
         if cache_file.exists():
             try:
-                with open(cache_file, "r") as f:
-                    data = json.load(f)
-                    return data["value"]
+                df = pd.read_csv(cache_file)
+                if "seed" not in df.columns or "value" not in df.columns:
+                    df = pd.DataFrame({"seed": [], "value": []})
+                return df
             except Exception as e:
-                print(f"Warning: Failed to get cache result: {e}")
-                cache_file.unlink(missing_ok=True)
-        return None
+                print(f"Warning: Failed to load cache file {cache_file}: {e}")
+                return pd.DataFrame({"seed": [], "value": []})
+        else:
+            return pd.DataFrame({"seed": [], "value": []})
 
-    def set(self, d_A: int, d_B: int, direction: Direction, seed: int, value: float):
-        if d_A < self._MIN_DIM and d_B < self._MIN_DIM:
-            return
-        filename = self._make_filename(d_A, d_B, direction, seed)
+    def get(self, d_A: int, d_B: int, direction: Direction, seed: int, extra_params: ExtraParams) -> float | None:
+        filename = self._make_filename(d_A, d_B, direction, extra_params)
         cache_file = self.cache_dir / filename
 
-        data = {
-            "d_A": d_A,
-            "d_B": d_B,
-            "direction": direction.value,
-            "seed": seed,
-            "value": value,
-        }
+        if not cache_file.exists():
+            return None
 
         try:
-            with open(cache_file, "w") as f:
-                json.dump(data, f, indent=2)
-        except IOError as e:
-            print(f"Warning: Failed to cache result: {e}")
+            df = self._load_or_create_dataframe(cache_file)
+            matching_rows = df[df["seed"] == seed]
+            if len(matching_rows) == 1:
+                return float(matching_rows.iloc[0]["value"])
+            elif len(matching_rows) > 1:
+                print(f"WARNING: Found {len(matching_rows)} rows for seed {seed} in {cache_file}")
+                return float(matching_rows.iloc[0]["value"])
+            return None
+        except Exception as e:
+            print(f"ERROR: Failed to get cache result from {cache_file}: {e}")
+            return None
 
-    def get_cache_stats(self) -> dict[str, float]:
-        """Get statistics about the cache."""
-        cache_files = list(self.cache_dir.glob("*.json"))
+    def set(self, d_A: int, d_B: int, direction: Direction, seed: int, value: float, extra_params: ExtraParams):
+        filename = self._make_filename(d_A, d_B, direction, extra_params)
+        cache_file = self.cache_dir / filename
 
-        return {
-            "cached_computations": len(cache_files),
-            "cache_size_mb": sum(f.stat().st_size for f in cache_files) / (1024 * 1024),
-        }
+        try:
+            df = self._load_or_create_dataframe(cache_file)
+            existing_mask = df["seed"] == seed
+            if existing_mask.any():
+                df.loc[existing_mask, "value"] = value
+            else:
+                new_row = pd.DataFrame({"seed": [seed], "value": [value]})
+                df = pd.concat([df, new_row], ignore_index=True)
 
-    def clear_cache(self):
-        """Clear all cached results."""
-        for cache_file in self.cache_dir.glob("*.json"):
-            cache_file.unlink()
+            df = df.sort_values("seed").reset_index(drop=True)
+            df.to_csv(cache_file, index=False)
+
+        except Exception as e:
+            print(f"Warning: Failed to cache result to {cache_file}: {e}")
+
+    def get_all_seeds(self, d_A: int, d_B: int, direction: Direction, extra_params: ExtraParams) -> pd.DataFrame | None:
+        filename = self._make_filename(d_A, d_B, direction, extra_params)
+        cache_file = self.cache_dir / filename
+
+        if not cache_file.exists():
+            return None
+
+        try:
+            return self._load_or_create_dataframe(cache_file)
+        except Exception as e:
+            print(f"Warning: Failed to load all seeds from {cache_file}: {e}")
+            return None
+
+
+CACHE = Cache()

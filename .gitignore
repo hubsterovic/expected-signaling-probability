@@ -15,8 +15,5 @@ wheels/
 # ruff
 .ruff_cache
 
-# data
-.esp_cache
-
 # misc
 .DS_Store

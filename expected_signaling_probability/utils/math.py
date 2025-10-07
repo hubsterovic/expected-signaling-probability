@@ -1,10 +1,9 @@
+from expected_signaling_probability.utils.params import ExtraParams, DEFAULT_EXTRA_PARAMS
 from expected_signaling_probability.utils.directions import Direction
-from expected_signaling_probability.utils.caching import Cache
+from expected_signaling_probability.utils.caching import Cache, CACHE
 from tqdm import tqdm
 import qutip as qt
 import numpy as np
-
-_CACHE = Cache()
 
 
 def compute_signaling_probability(
@@ -30,37 +29,35 @@ def generate_random_dm(d_A: int, d_B: int, seed: int | None = None) -> qt.Qobj:
     return random_dm
 
 
-def generate_random_superoperator(d_A: int, d_B: int, seed: int | None = None) -> qt.Qobj:
-    return qt.rand_super_bcsz([d_A, d_B], seed=seed)  # type: ignore
+def generate_random_superoperator(d_A: int, d_B: int, seed: int | None = None, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> qt.Qobj:
+    return qt.rand_super_bcsz([d_A, d_B], seed=seed, rank=extra_params.superoperator_rank)  # type: ignore
 
 
-def generate_random_local_superoperator(d_A: int, d_B: int, direction: Direction, seed: int | None = None) -> qt.Qobj:
+def generate_random_local_superoperator(d_A: int, d_B: int, direction: Direction, seed: int | None = None, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> qt.Qobj:
     if direction == Direction.A_TO_B:
         local_superoperator = qt.super_tensor(
-            qt.rand_super_bcsz(d_A, seed=seed),  # type: ignore
+            qt.rand_super_bcsz(d_A, seed=seed, rank=extra_params.superoperator_rank),  # type: ignore
             qt.to_super(qt.identity(d_B)),
         )
     elif direction == Direction.B_TO_A:
         local_superoperator = qt.super_tensor(
             qt.to_super(qt.identity(d_A)),
-            qt.rand_super_bcsz(d_B, seed=seed),  # type: ignore
+            qt.rand_super_bcsz(d_B, seed=seed, rank=extra_params.superoperator_rank),  # type: ignore
         )
     return local_superoperator
 
 
-def _one_shot_signaling_probability(d_A: int, d_B: int, direction: Direction, seed: int, cache: Cache | None = _CACHE) -> float:
-    if cache:
-        cached_result = cache.get(d_A, d_B, direction, seed)
-        if cached_result is not None:
-            return cached_result
+def _one_shot_signaling_probability(d_A: int, d_B: int, direction: Direction, seed: int, cache: Cache | None = CACHE, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> float:
+    if cache and (cached_result := cache.get(d_A, d_B, direction, seed, extra_params)):
+        return cached_result
 
     initial_state = generate_random_dm(d_A, d_B, seed)
-    local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed)
-    global_superoperator = generate_random_superoperator(d_A, d_B, seed)
+    local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed, extra_params)
+    global_superoperator = generate_random_superoperator(d_A, d_B, seed, extra_params)
     tr_dist = compute_signaling_probability(initial_state, local_operation, global_superoperator, direction)
 
     if cache:
-        cache.set(d_A, d_B, direction, seed, tr_dist)
+        cache.set(d_A, d_B, direction, seed, tr_dist, extra_params)
 
     return tr_dist
 
@@ -70,7 +67,8 @@ def expected_signaling_probability(
     d_A: int,
     d_B: int,
     direction: Direction,
-    cache: Cache | None = _CACHE,
+    cache: Cache | None = CACHE,
+    extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS,
     _initial_seed_state: int = 0,
 ) -> np.typing.NDArray:
     seed = _initial_seed_state
@@ -83,7 +81,7 @@ def expected_signaling_probability(
     ):
         seed += 1
 
-        tr_dist = _one_shot_signaling_probability(d_A, d_B, direction, seed, cache)
+        tr_dist = _one_shot_signaling_probability(d_A, d_B, direction, seed, cache, extra_params)
         tr_dists.append(tr_dist)
 
     return np.array(tr_dists)

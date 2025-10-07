@@ -101,7 +101,7 @@ def plot_asymmetric_expected_signaling_probability(
 
 
 def main():
-    n_samples = 10000
+    n_samples = 1000
     d_A_min = 2
     d_A_max = 20
     d_B = 2
