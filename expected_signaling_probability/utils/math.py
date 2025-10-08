@@ -74,6 +74,9 @@ def expected_signaling_probability(
     seed = _initial_seed_state
     tr_dists: list[float] = []
 
+    if cache is not None:
+        cache.warm(d_A, d_B, direction, extra_params)
+
     for _ in tqdm(
         range(n_samples),
         desc=f"Computing <S>_{direction.value} ({d_A=}, {d_B=})",
@@ -83,5 +86,9 @@ def expected_signaling_probability(
 
         tr_dist = _one_shot_signaling_probability(d_A, d_B, direction, seed, cache, extra_params)
         tr_dists.append(tr_dist)
+
+    # Close the warmed cache to flush updates
+    if cache is not None:
+        cache.close()
 
     return np.array(tr_dists)
