@@ -1,12 +1,16 @@
 from expected_signaling_probability.utils.params import ExtraParams, DEFAULT_EXTRA_PARAMS
 from expected_signaling_probability.utils.directions import Direction
-from expected_signaling_probability.utils.caching import Cache, SIGNALING_CACHE
+from expected_signaling_probability.utils.caching import (
+    Cache, 
+    SIGNALING_CACHE, 
+    REDUCED_DISTINGUISHABILITY_CACHE,
+)
 from tqdm import tqdm
 import qutip as qt
 import numpy as np
 
 
-def compute_signaling_probability(
+def _compute_signaling_probability(
     initial_state: qt.Qobj,
     local_operation: qt.Qobj,
     global_superoperator: qt.Qobj,
@@ -54,7 +58,7 @@ def _one_shot_signaling_probability(d_A: int, d_B: int, direction: Direction, se
     initial_state = generate_random_dm(d_A, d_B, seed)
     local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed, extra_params)
     global_superoperator = generate_random_superoperator(d_A, d_B, seed, extra_params)
-    tr_dist = compute_signaling_probability(initial_state, local_operation, global_superoperator, direction)
+    tr_dist = _compute_signaling_probability(initial_state, local_operation, global_superoperator, direction)
 
     if cache:
         cache.set(d_A, d_B, direction, seed, tr_dist, extra_params)
@@ -92,3 +96,57 @@ def expected_signaling_probability(
         cache.close()
 
     return np.array(tr_dists)
+
+
+def _compute_reduced_distinguishability(initial_state_one: qt.Qobj, initial_state_two: qt.Qobj, global_superoperator: qt.Qobj, direction: Direction) -> float:
+    final_state_one = global_superoperator(initial_state_one)
+    final_state_two = global_superoperator(initial_state_two)
+    reduced_final_state_one = qt.ptrace(final_state_one, direction.to_ptrace_index())
+    reduced_final_state_two = qt.ptrace(final_state_two, direction.to_ptrace_index())
+    tr_dist = qt.tracedist(reduced_final_state_one, reduced_final_state_two)
+    return tr_dist
+
+
+def _one_shot_reduced_distinguishability(d_A: int, d_B: int, direction: Direction, seed: int, cache: Cache | None = REDUCED_DISTINGUISHABILITY_CACHE, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> float:
+    if cache and (cached_result := cache.get(d_A, d_B, direction, seed, extra_params)):
+        return cached_result
+
+    initial_state_one = generate_random_dm(d_A, d_B, seed)
+    initial_state_two = generate_random_dm(d_A, d_B, seed + 1)
+    global_superoperator = generate_random_superoperator(d_A, d_B, seed, extra_params)
+    tr_dist = _compute_reduced_distinguishability(initial_state_one, initial_state_two, global_superoperator, direction)
+
+    if cache:
+        cache.set(d_A, d_B, direction, seed, tr_dist, extra_params)
+
+    return tr_dist
+
+def expected_reduced_distinguishability(
+    n_samples: int,
+    d_A: int,
+    d_B: int,
+    direction: Direction,
+    cache: Cache | None = REDUCED_DISTINGUISHABILITY_CACHE,
+    extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS,
+    _initial_seed_state: int = 0,
+) -> np.typing.NDArray:
+    seed = _initial_seed_state
+    tr_dists: list[float] = []
+
+    if cache is not None:
+        cache.warm(d_A, d_B, direction, extra_params)
+
+    for _ in tqdm(
+        range(n_samples),
+        desc=f"Computing R_{direction.value} ({d_A=}, {d_B=})",
+        leave=False,
+    ):
+        seed += 1
+        tr_dist = _one_shot_reduced_distinguishability(d_A, d_B, direction, seed, cache, extra_params)
+        tr_dists.append(tr_dist)
+
+    if cache is not None:
+        cache.close()
+
+    return np.array(tr_dists)
+

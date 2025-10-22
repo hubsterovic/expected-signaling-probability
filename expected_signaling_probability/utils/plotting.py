@@ -58,6 +58,11 @@ class LatexStrings:
     EXPECTED_SIGNALING_PROBABILITY_B_TO_A = r"$\langle \mathcal{S} \rangle_{B \to A}$"
     SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY = r"$\langle \mathcal{S} \rangle$"
 
+    EXPECTED_REDUCED_DISTINGUISHABILITY_X_TO_Y = r"$\langle \mathcal{R} \rangle_{X \to Y}$"
+    EXPECTED_REDUCED_DISTINGUISHABILITY_A_TO_B = r"$\langle \mathcal{R} \rangle_{A \to B}$"
+    EXPECTED_REDUCED_DISTINGUISHABILITY_B_TO_A = r"$\langle \mathcal{R} \rangle_{B \to A}$"
+    SYMMETRIC_EXPECTED_REDUCED_DISTINGUISHABILITY = r"$\langle \mathcal{R} \rangle$"
+
     @classmethod
     def n_samples_to_sci(cls, n: int) -> str:
         p = np.log10(n)
