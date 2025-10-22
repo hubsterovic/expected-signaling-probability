@@ -1,0 +1,1 @@
+Asymtotic behaviour seems to look the same as the expected signaling?
