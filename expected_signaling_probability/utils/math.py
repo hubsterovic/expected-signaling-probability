@@ -1,6 +1,6 @@
 from expected_signaling_probability.utils.params import ExtraParams, DEFAULT_EXTRA_PARAMS
 from expected_signaling_probability.utils.directions import Direction
-from expected_signaling_probability.utils.caching import Cache, CACHE
+from expected_signaling_probability.utils.caching import Cache, SIGNALING_CACHE
 from tqdm import tqdm
 import qutip as qt
 import numpy as np
@@ -47,7 +47,7 @@ def generate_random_local_superoperator(d_A: int, d_B: int, direction: Direction
     return local_superoperator
 
 
-def _one_shot_signaling_probability(d_A: int, d_B: int, direction: Direction, seed: int, cache: Cache | None = CACHE, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> float:
+def _one_shot_signaling_probability(d_A: int, d_B: int, direction: Direction, seed: int, cache: Cache | None = SIGNALING_CACHE, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> float:
     if cache and (cached_result := cache.get(d_A, d_B, direction, seed, extra_params)):
         return cached_result
 
@@ -67,7 +67,7 @@ def expected_signaling_probability(
     d_A: int,
     d_B: int,
     direction: Direction,
-    cache: Cache | None = CACHE,
+    cache: Cache | None = SIGNALING_CACHE,
     extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS,
     _initial_seed_state: int = 0,
 ) -> np.typing.NDArray:

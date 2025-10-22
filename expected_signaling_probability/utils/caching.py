@@ -6,14 +6,15 @@ import pandas as pd
 
 
 class Cache:
-    def __init__(self, cache_dir: str = "data/cache"):
-        self.cache_dir = Path(cache_dir)
+    def __init__(self, label: str):
+        self.label = label
+        self.cache_dir = Path(f"data/cache/{self.label}")
         self.cache_dir.mkdir(exist_ok=True, parents=True)
 
         self._warm_seed_to_value: dict[int, float] | None = None  # seed -> value
 
     def _make_filename(self, d_A: int, d_B: int, direction: Direction, extra_params: ExtraParams) -> str:
-        filename_parts = [f"dA={d_A}", f"dB={d_B}", f"direction={direction.to_str()}"]
+        filename_parts = [f"{self.label}", f"dA={d_A}", f"dB={d_B}", f"direction={direction.to_str()}"]
 
         for field in fields(extra_params):
             value = getattr(extra_params, field.name)
@@ -89,4 +90,6 @@ class Cache:
         df.to_csv(cache_file, index=False)
 
 
-CACHE = Cache()
+SIGNALING_CACHE = Cache(label="S")
+REDUCED_DISTINGUISHABILITY_CACHE = Cache(label="R")
+DISTINGUISHABILITY_CACHE = Cache(label="D")
