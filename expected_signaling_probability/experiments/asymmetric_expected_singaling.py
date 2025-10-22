@@ -1,8 +1,9 @@
 from expected_signaling_probability.utils.plotting import apply_plot_style, LatexStrings
 from expected_signaling_probability import expected_signaling_probability, Direction
 from expected_signaling_probability.utils.stats import statistics, Stats
-import matplotlib.pyplot as plt
+from datetime import datetime
 from scipy import stats
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -70,7 +71,9 @@ def add_plot_scatter(x: np.typing.NDArray, y: np.typing.NDArray, direction: Dire
 def plot_asymmetric_expected_signaling_probability(
     all_stats_A_to_B: list[Stats],
     all_stats_B_to_A: list[Stats],
+    d_B: int,
     use_error_bars: bool = True,
+    save: bool = True,
 ):
     apply_plot_style()
     x_atb = np.array([stat.d_A for stat in all_stats_A_to_B])
@@ -94,11 +97,15 @@ def plot_asymmetric_expected_signaling_probability(
     plt.yscale("log")
     plt.xlabel(r"$d_A$")
     plt.ylabel(LatexStrings.EXPECTED_SIGNALING_PROBABILITY_X_TO_Y)
-    plt.title("Asymmetric Expected Signaling Probability" + " " + f"(N = {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
+    plt.title("Asymmetric Expected Signaling Probability" + " " + rf"($d_B =$ {d_B}, $N =$ {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
     plt.legend()
     plt.tight_layout()
-    plt.show()
 
+    if save:
+        filename = f"plots/asymmetric_expected_signaling_probability_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
+
+    plt.show()
 
 def main():
     n_samples = 1000
@@ -108,7 +115,7 @@ def main():
     all_stats_A_to_B = compute_asymmetric_expected_signaling_probability(n_samples, d_A_min, d_A_max, d_B, Direction.A_TO_B)
     all_stats_B_to_A = compute_asymmetric_expected_signaling_probability(n_samples, d_A_min, d_A_max, d_B, Direction.B_TO_A)
 
-    plot_asymmetric_expected_signaling_probability(all_stats_A_to_B, all_stats_B_to_A)
+    plot_asymmetric_expected_signaling_probability(all_stats_A_to_B, all_stats_B_to_A, d_B=d_B)
 
 
 if __name__ == "__main__":

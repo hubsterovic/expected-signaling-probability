@@ -2,9 +2,9 @@ from expected_signaling_probability.utils.plotting import apply_plot_style, Late
 from expected_signaling_probability import expected_signaling_probability, Direction
 from expected_signaling_probability.utils.stats import statistics, Stats
 import matplotlib.pyplot as plt
-from scipy import stats
 import numpy as np
-
+from datetime import datetime
+from scipy import stats
 
 def compute_symmetric_expected_signaling_probability(n_samples: int, d_min: int, d_max: int) -> list[Stats]:
     assert d_min <= d_max
@@ -67,7 +67,7 @@ def add_plot_scatter(x: np.typing.NDArray, y: np.typing.NDArray):
     )
 
 
-def plot_symmetric_expected_signaling_probability(all_stats: list[Stats], use_error_bars: bool = True):
+def plot_symmetric_expected_signaling_probability(all_stats: list[Stats], use_error_bars: bool = True, save: bool = True):
     apply_plot_style()
     x = np.array([stat.d_A for stat in all_stats])
     y = np.array([stat.mean for stat in all_stats])
@@ -83,16 +83,20 @@ def plot_symmetric_expected_signaling_probability(all_stats: list[Stats], use_er
     plt.xlabel(r"$d$")
     plt.xticks(x, [str(int(d)) for d in x])
     plt.ylabel(LatexStrings.SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY)
-    plt.title("Symmetric Expected Signaling Probability" + " " + LatexStrings.SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY + " " + f"(N = {LatexStrings.n_samples_to_sci(all_stats[0].n)})")
+    plt.title("Symmetric Expected Signaling Probability" + " " + LatexStrings.SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY + " " + rf"($N =$ {LatexStrings.n_samples_to_sci(all_stats[0].n)})")
     plt.legend()
     plt.tight_layout()
+
+    if save:
+        filename = f"plots/symmetric_expected_signaling_probability_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.show()
 
 
 def main():
     n_samples = 1000
     d_min = 2
-    d_max = 11
+    d_max = 10
     all_stats = compute_symmetric_expected_signaling_probability(n_samples, d_min, d_max)
     plot_symmetric_expected_signaling_probability(all_stats)
 
