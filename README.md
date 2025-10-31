@@ -2,9 +2,9 @@
 
 $$
 \mathcal{S}_{A \to B} =
-D_{\text{Tr}}\!\left(
-\text{Tr}_A\!\left[ \mathcal{E}_{AB}(\rho_{AB}) \right],
-\text{Tr}_A\!\left[ \mathcal{E}_{AB}(\mathcal{A}_A(\rho_{AB})) \right]
+D_{\text{Tr}}\left(
+\text{Tr}_A\left[ \mathcal{E}_{AB}(\rho_{AB}) \right],
+\text{Tr}_A\left[ \mathcal{E}_{AB}(\mathcal{A}_A(\rho_{AB})) \right]
 \right)
 $$
 
