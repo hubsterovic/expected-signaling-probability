@@ -33,3 +33,17 @@ uv sync
 uv run expected_signaling_probability/experiments/symmetric_expected_signaling.py
 uv run expected_signaling_probability/experiments/asymmetric_expected_signaling.py
 ```
+
+
+## Main Package - [QuTiP](https://qutip.org/citing.html)
+
+```
+@misc{lambert2024qutip,
+    title={QuTiP 5: The Quantum Toolbox in Python},
+    author={Neill Lambert and Eric Giguère and Paul Menczel and Boxi Li and Patrick Hopf and Gerardo Suárez and Marc Gali and Jake Lishman and Rushiraj Gadhvi and Rochisha Agarwal and Asier Galicia and Nathan Shammah and Paul Nation and J. R. Johansson and Shahnawaz Ahmed and Simon Cross and Alexander Pitchford and Franco Nori},
+    year={2024},
+    eprint={2412.04705},
+    archivePrefix={arXiv},
+    primaryClass={quant-ph}
+}
+```
