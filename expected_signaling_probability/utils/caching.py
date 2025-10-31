@@ -91,5 +91,5 @@ class Cache:
 
 
 SIGNALING_CACHE = Cache(label="S")
-REDUCED_DISTINGUISHABILITY_CACHE = Cache(label="R")
-DISTINGUISHABILITY_CACHE = Cache(label="D")
+TRANSMISSION_CACHE = Cache(label="T")
+CORRELATION_CACHE = Cache(label="C")

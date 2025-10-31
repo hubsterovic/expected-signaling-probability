@@ -58,10 +58,15 @@ class LatexStrings:
     EXPECTED_SIGNALING_PROBABILITY_B_TO_A = r"$\langle \mathcal{S} \rangle_{B \to A}$"
     SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY = r"$\langle \mathcal{S} \rangle$"
 
-    EXPECTED_REDUCED_DISTINGUISHABILITY_X_TO_Y = r"$\langle \mathcal{R} \rangle_{X \to Y}$"
-    EXPECTED_REDUCED_DISTINGUISHABILITY_A_TO_B = r"$\langle \mathcal{R} \rangle_{A \to B}$"
-    EXPECTED_REDUCED_DISTINGUISHABILITY_B_TO_A = r"$\langle \mathcal{R} \rangle_{B \to A}$"
-    SYMMETRIC_EXPECTED_REDUCED_DISTINGUISHABILITY = r"$\langle \mathcal{R} \rangle$"
+    EXPECTED_TRANSMISSION_PROBABILITY_X_TO_Y = r"$\langle \mathcal{T} \rangle_{X \to Y}$"
+    EXPECTED_TRANSMISSION_PROBABILITY_A_TO_B = r"$\langle \mathcal{T} \rangle_{A \to B}$"
+    EXPECTED_TRANSMISSION_PROBABILITY_B_TO_A = r"$\langle \mathcal{T} \rangle_{B \to A}$"
+    SYMMETRIC_EXPECTED_TRANSMISSION_PROBABILITY = r"$\langle \mathcal{T} \rangle$"
+
+    EXPECTED_CORRELATION_PROBABILITY_X_TO_Y = r"$\langle \mathcal{C} \rangle_{X \to Y}$"
+    EXPECTED_CORRELATION_PROBABILITY_A_TO_B = r"$\langle \mathcal{C} \rangle_{A \to B}$"
+    EXPECTED_CORRELATION_PROBABILITY_B_TO_A = r"$\langle \mathcal{C} \rangle_{B \to A}$"
+    SYMMETRIC_EXPECTED_CORRELATION_PROBABILITY = r"$\langle \mathcal{C} \rangle$"
 
     @classmethod
     def n_samples_to_sci(cls, n: int) -> str:

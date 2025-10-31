@@ -1,17 +1,17 @@
 from expected_signaling_probability.utils.plotting import apply_plot_style, LatexStrings
-from expected_signaling_probability.utils.math import expected_reduced_distinguishability, Direction
+from expected_signaling_probability.utils.math import expected_transmission_probability, Direction
 from expected_signaling_probability.utils.stats import statistics, Stats
 import matplotlib.pyplot as plt
 from scipy import stats
 import numpy as np
 
 
-def compute_asymmetric_expected_reduced_distinguishability(n_samples: int, d_A_min: int, d_A_max: int, d_B: int, direction: Direction) -> list[Stats]:
+def compute_asymmetric_expected_transmission_probability(n_samples: int, d_A_min: int, d_A_max: int, d_B: int, direction: Direction) -> list[Stats]:
     assert d_A_min <= d_A_max
     dims_A = [d for d in range(d_A_min, d_A_max + 1)]
     all_stats = []
     for d_A in dims_A:
-        samples = expected_reduced_distinguishability(n_samples, d_A, d_B, direction)
+        samples = expected_transmission_probability(n_samples, d_A, d_B, direction)
         stats = statistics(samples, d_A=d_A, d_B=d_B, direction=direction)
         all_stats.append(stats)
     return all_stats
@@ -51,7 +51,7 @@ def add_plot_power_law_fit(x: np.typing.NDArray, y: np.typing.NDArray, direction
     plt.plot(
         x_fit,
         y_fit,
-        label=rf"Fit: {LatexStrings.EXPECTED_REDUCED_DISTINGUISHABILITY_A_TO_B if direction == Direction.A_TO_B else LatexStrings.EXPECTED_REDUCED_DISTINGUISHABILITY_B_TO_A} $ \propto d_A^{{{slope:.2f} \pm {stderr:.2f}}}$",
+        label=rf"Fit: {LatexStrings.EXPECTED_TRANSMISSION_PROBABILITY_A_TO_B if direction == Direction.A_TO_B else LatexStrings.EXPECTED_TRANSMISSION_PROBABILITY_B_TO_A} $ \propto d_A^{{{slope:.2f} \pm {stderr:.2f}}}$",
         linestyle="--",
         color="blue" if direction == Direction.A_TO_B else "red",
     )
@@ -63,11 +63,11 @@ def add_plot_scatter(x: np.typing.NDArray, y: np.typing.NDArray, direction: Dire
         y,
         color="blue" if direction == Direction.A_TO_B else "red",
         s=50,
-        label=rf"Data: {LatexStrings.EXPECTED_REDUCED_DISTINGUISHABILITY_A_TO_B if direction == Direction.A_TO_B else LatexStrings.EXPECTED_REDUCED_DISTINGUISHABILITY_B_TO_A}",
+        label=rf"Data: {LatexStrings.EXPECTED_TRANSMISSION_PROBABILITY_A_TO_B if direction == Direction.A_TO_B else LatexStrings.EXPECTED_TRANSMISSION_PROBABILITY_B_TO_A}",
     )
 
 
-def plot_asymmetric_expected_reduced_distinguishability(
+def plot_asymmetric_expected_transmission_probability(
     all_stats_A_to_B: list[Stats],
     all_stats_B_to_A: list[Stats],
     use_error_bars: bool = True,
@@ -93,8 +93,8 @@ def plot_asymmetric_expected_reduced_distinguishability(
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel(r"$d_A$")
-    plt.ylabel(LatexStrings.EXPECTED_REDUCED_DISTINGUISHABILITY_X_TO_Y)
-    plt.title("Asymmetric Expected Reduced Distinguishability" + " " + f"(N = {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
+    plt.ylabel(LatexStrings.EXPECTED_TRANSMISSION_PROBABILITY_X_TO_Y)
+    plt.title("Asymmetric Expected Transmission Probability" + " " + f"(N = {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
     plt.legend()
     plt.tight_layout()
     plt.show()
@@ -105,10 +105,10 @@ def main():
     d_A_min = 2
     d_A_max = 20
     d_B = 2
-    all_stats_A_to_B = compute_asymmetric_expected_reduced_distinguishability(n_samples, d_A_min, d_A_max, d_B, Direction.A_TO_B)
-    all_stats_B_to_A = compute_asymmetric_expected_reduced_distinguishability(n_samples, d_A_min, d_A_max, d_B, Direction.B_TO_A)
+    all_stats_A_to_B = compute_asymmetric_expected_transmission_probability(n_samples, d_A_min, d_A_max, d_B, Direction.A_TO_B)
+    all_stats_B_to_A = compute_asymmetric_expected_transmission_probability(n_samples, d_A_min, d_A_max, d_B, Direction.B_TO_A)
 
-    plot_asymmetric_expected_reduced_distinguishability(all_stats_A_to_B, all_stats_B_to_A)
+    plot_asymmetric_expected_transmission_probability(all_stats_A_to_B, all_stats_B_to_A)
 
 
 if __name__ == "__main__":
