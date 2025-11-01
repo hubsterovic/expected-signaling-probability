@@ -12,7 +12,7 @@ $$
 \underset{\rho, \sigma, \mathcal{E}}{\mathbb{E}}\!
 \Big[ \mathcal{T}_{A \to B} \Big]
 $$
-> Note: $ \underset{d_A \to \infty}{\lim} \, \langle \mathcal{T} \rangle_{A \to B} \approx \underset{d_A \to \infty}{\lim} \, \langle \mathcal{S} \rangle_{A \to B} \, ?$ 
+> Note: $ \langle \mathcal{T} \rangle_{A \to B} \approx  \langle \mathcal{S} \rangle_{A \to B}, \quad d_A \gg 1 $ 
 ## Expected Correlation Probability
 $$
 \mathcal{C}_{A \to B} =
@@ -27,3 +27,5 @@ $$
 \underset{\rho, \sigma}{\mathbb{E}}\!
 \Big[ \mathcal{C}_{A \to B} \Big]
 $$
+
+> Note: $\langle \mathcal{C} \rangle_{A \to B} \approx \langle \mathcal{S}^{(1)} \rangle_{A \to B}$ where $\text{rank}(\mathcal{S}^{(1)}) = 1$ which is a so called complete orthogonal measurement superoperator (COMS). 
