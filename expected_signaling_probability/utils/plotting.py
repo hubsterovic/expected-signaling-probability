@@ -1,3 +1,5 @@
+from expected_signaling_probability.utils.fitting import fit_power_law
+from expected_signaling_probability.utils.stats import Stats
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -72,3 +74,62 @@ class LatexStrings:
     def n_samples_to_sci(cls, n: int) -> str:
         p = np.log10(n)
         return f"$10^{{{p:.0f}}}$"
+
+
+def plot_scatter(
+    x: np.typing.NDArray,
+    y: np.typing.NDArray,
+    *,
+    color: str,
+    label: str,
+):
+    plt.scatter(x, y, color=color, s=50, label=rf"Data: {label}")
+
+
+def plot_error_bars(
+    x: np.typing.NDArray,
+    y: np.typing.NDArray,
+    all_stats: list[Stats],
+):
+    yerr_low = y - np.array([s.q25 for s in all_stats])
+    yerr_high = np.array([s.q75 for s in all_stats]) - y
+    plt.errorbar(
+        x,
+        y,
+        yerr=[yerr_low, yerr_high],
+        label=r"IQR: $\pm 25\%$",
+        fmt="none",
+        capsize=3,
+        ecolor="grey",
+    )
+
+
+def plot_power_law_fit(
+    x: np.typing.NDArray,
+    y: np.typing.NDArray,
+    *,
+    color: str,
+    probability_label: str,
+    dim_var: str = "d",
+    d_fit_min: int | None = None,
+):
+    if d_fit_min is not None:
+        mask = x >= d_fit_min
+        x_fit_data, y_fit_data = x[mask], y[mask]
+    else:
+        x_fit_data, y_fit_data = x, y
+
+    fit = fit_power_law(x_fit_data, y_fit_data)
+    fit_range = rf" (${dim_var} \geq {d_fit_min}$)" if d_fit_min is not None else ""
+    plt.plot(
+        fit.x_fit,
+        fit.y_fit,
+        label=rf"Fit{fit_range}: {probability_label} $ \propto {dim_var}^{{{fit.slope:.2f} \pm {fit.stderr:.2f}}}$",
+        linestyle="--",
+        color=color,
+    )
+
+    if d_fit_min is not None and x.min() < d_fit_min:
+        x_extrap = np.logspace(np.log10(x.min()), np.log10(d_fit_min), 100)
+        y_extrap = 10 ** (fit.intercept + fit.slope * np.log10(x_extrap))
+        plt.plot(x_extrap, y_extrap, linestyle=":", color=color, alpha=0.35)
