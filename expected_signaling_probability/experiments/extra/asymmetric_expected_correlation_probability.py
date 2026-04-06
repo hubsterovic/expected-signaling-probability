@@ -1,9 +1,12 @@
 from expected_signaling_probability.utils.plotting import (
+    PlotMode,
     apply_plot_style,
+    plot_title,
     LatexStrings,
     plot_scatter,
     plot_error_bars,
     plot_power_law_fit,
+    save_plot,
 )
 from expected_signaling_probability.utils.math import expected_correlation_probability, Direction
 from expected_signaling_probability.utils.stats import statistics, Stats
@@ -33,10 +36,12 @@ def plot_asymmetric_expected_correlation_probability(
     all_stats_A_to_B: list[Stats],
     all_stats_B_to_A: list[Stats],
     use_error_bars: bool = True,
+    save: bool = True,
     d_fit_min: int | None = None,
+    mode: PlotMode = PlotMode.EXPLORE,
 ):
-    apply_plot_style()
-    plt.figure(figsize=(10, 6))
+    apply_plot_style(mode)
+    plt.figure()
 
     for all_stats, direction in [
         (all_stats_A_to_B, Direction.A_TO_B),
@@ -55,9 +60,12 @@ def plot_asymmetric_expected_correlation_probability(
     plt.yscale("log")
     plt.xlabel(r"$d_A$")
     plt.ylabel(LatexStrings.EXPECTED_CORRELATION_PROBABILITY_X_TO_Y)
-    plt.title(f"Asymmetric Expected Correlation Probability ($N =$ {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
+    plot_title(f"Asymmetric Expected Correlation Probability ($N =$ {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
     plt.legend()
     plt.tight_layout()
+
+    if save:
+        save_plot("asymmetric_expected_correlation_probability")
     plt.show()
 
 

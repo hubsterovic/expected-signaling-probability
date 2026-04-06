@@ -1,5 +1,9 @@
 from expected_signaling_probability.utils.fitting import fit_power_law
 from expected_signaling_probability.utils.stats import Stats
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from enum import Enum
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -7,11 +11,72 @@ import shutil
 import os
 
 
-def apply_plot_style():
+class PlotMode(Enum):
+    EXPLORE = "explore"
+    PAPER = "paper"
+
+
+@dataclass(frozen=True)
+class _StyleConfig:
+    fig_width: float
+    fig_aspect: float
+    font_size: float
+    legend_fontsize: float
+    marker_size: float
+    capsize: float
+    font_scale: float
+    axes_linewidth: float
+    grid_linewidth: float
+    lines_linewidth: float
+    save_format: str
+    show_title: bool
+
+
+_STYLES: dict[PlotMode, _StyleConfig] = {
+    PlotMode.EXPLORE: _StyleConfig(
+        fig_width=10,
+        fig_aspect=0.6,
+        font_size=12,
+        legend_fontsize=10,
+        marker_size=50,
+        capsize=3,
+        font_scale=1.0,
+        axes_linewidth=1.2,
+        grid_linewidth=0.7,
+        lines_linewidth=1.5,
+        save_format="png",
+        show_title=True,
+    ),
+    PlotMode.PAPER: _StyleConfig(
+        fig_width=3.4,
+        fig_aspect=0.75,
+        font_size=10,
+        legend_fontsize=8,
+        marker_size=12,
+        capsize=2,
+        font_scale=1.0,
+        axes_linewidth=0.8,
+        grid_linewidth=0.5,
+        lines_linewidth=1.0,
+        save_format="pdf",
+        show_title=False,
+    ),
+}
+
+_active_config: _StyleConfig = _STYLES[PlotMode.EXPLORE]
+
+PLOTS_DIR = Path("plots")
+
+
+def apply_plot_style(mode: PlotMode = PlotMode.EXPLORE):
+    global _active_config
+    _active_config = _STYLES[mode]
+    cfg = _active_config
+
     sns.set_theme(
         style="whitegrid",
-        context="paper",
-        font_scale=1.5,
+        context="notebook",
+        font_scale=cfg.font_scale,
     )
 
     use_tex = shutil.which("pdflatex") is not None
@@ -20,13 +85,29 @@ def apply_plot_style():
 
     plt.rcParams.update(
         {
+            "figure.figsize": (cfg.fig_width, cfg.fig_width * cfg.fig_aspect),
             "figure.dpi": 150,
-            "axes.linewidth": 1.2,
-            "grid.linewidth": 0.7,
+            "font.size": cfg.font_size,
+            "axes.titlesize": cfg.font_size,
+            "axes.labelsize": cfg.font_size,
+            "xtick.labelsize": cfg.font_size - 1,
+            "ytick.labelsize": cfg.font_size - 1,
+            "legend.fontsize": cfg.legend_fontsize,
+            "axes.linewidth": cfg.axes_linewidth,
+            "grid.linewidth": cfg.grid_linewidth,
             "grid.alpha": 0.3,
+            "lines.linewidth": cfg.lines_linewidth,
             "axes.unicode_minus": False,
+            "axes.labelpad": 2 if mode == PlotMode.PAPER else 4,
+            "xtick.major.pad": 3.5 if mode == PlotMode.PAPER else 3.5,
+            "ytick.major.pad": 2 if mode == PlotMode.PAPER else 3.5,
+            "xtick.major.size": 3 if mode == PlotMode.PAPER else 3.5,
+            "ytick.major.size": 3 if mode == PlotMode.PAPER else 3.5,
+            "xtick.direction": "in" if mode == PlotMode.PAPER else "out",
+            "ytick.direction": "in" if mode == PlotMode.PAPER else "out",
             "savefig.dpi": 300,
             "savefig.bbox": "tight",
+            "savefig.pad_inches": 0.02 if mode == PlotMode.PAPER else 0.1,
         }
     )
 
@@ -52,6 +133,20 @@ def apply_plot_style():
             }
         )
         print("[plot_styling] LaTeX not found. Using mathtext fallback.")
+
+
+def save_plot(name: str, fmt: str | None = None):
+    fmt = fmt or _active_config.save_format
+    PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = PLOTS_DIR / f"{name}_{timestamp}.{fmt}"
+    plt.savefig(filename)
+    print(f"[save_plot] Saved to {filename}")
+
+
+def plot_title(title: str):
+    if _active_config.show_title:
+        plt.title(title)
 
 
 class LatexStrings:
@@ -83,7 +178,16 @@ def plot_scatter(
     color: str,
     label: str,
 ):
-    plt.scatter(x, y, color=color, s=50, label=rf"Data: {label}")
+    fill_kwargs = (
+        {"color": color}
+        if _active_config.show_title
+        else {"facecolors": "none", "edgecolors": color, "linewidths": 0.8}
+    )
+    plt.scatter(
+        x, y, s=_active_config.marker_size, zorder=2,
+        label=rf"Data: {label}" if _active_config.show_title else "_nolegend_",
+        **fill_kwargs,  # type: ignore[arg-type]
+    )
 
 
 def plot_error_bars(
@@ -93,14 +197,18 @@ def plot_error_bars(
 ):
     yerr_low = y - np.array([s.q25 for s in all_stats])
     yerr_high = np.array([s.q75 for s in all_stats]) - y
+    elinewidth = 0.6 if not _active_config.show_title else 1.0
     plt.errorbar(
         x,
         y,
         yerr=[yerr_low, yerr_high],
-        label=r"IQR: $\pm 25\%$",
+        label=r"IQR" if _active_config.show_title else "_nolegend_",
         fmt="none",
-        capsize=3,
+        capsize=_active_config.capsize,
         ecolor="grey",
+        elinewidth=elinewidth,
+        capthick=elinewidth,
+        zorder=1,
     )
 
 
@@ -120,13 +228,20 @@ def plot_power_law_fit(
         x_fit_data, y_fit_data = x, y
 
     fit = fit_power_law(x_fit_data, y_fit_data)
-    fit_range = rf" (${dim_var} \geq {d_fit_min}$)" if d_fit_min is not None else ""
+
+    if _active_config.show_title:
+        fit_range = rf" (${dim_var} \geq {d_fit_min}$)" if d_fit_min is not None else ""
+        fit_label = rf"Fit{fit_range}: {probability_label} $ \propto {dim_var}^{{{fit.slope:.2f} \pm {fit.stderr:.2f}}}$"
+    else:
+        fit_label = rf"{probability_label} $ \propto {dim_var}^{{{fit.slope:.2f} \pm {fit.stderr:.2f}}}$"
+
     plt.plot(
         fit.x_fit,
         fit.y_fit,
-        label=rf"Fit{fit_range}: {probability_label} $ \propto {dim_var}^{{{fit.slope:.2f} \pm {fit.stderr:.2f}}}$",
+        label=fit_label,
         linestyle="--",
         color=color,
+        zorder=3,
     )
 
     if d_fit_min is not None and x.min() < d_fit_min:

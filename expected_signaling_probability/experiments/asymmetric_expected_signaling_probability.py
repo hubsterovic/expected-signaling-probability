@@ -1,13 +1,15 @@
 from expected_signaling_probability.utils.plotting import (
+    PlotMode,
     apply_plot_style,
+    plot_title,
     LatexStrings,
     plot_scatter,
     plot_error_bars,
     plot_power_law_fit,
+    save_plot,
 )
 from expected_signaling_probability import expected_signaling_probability, Direction
 from expected_signaling_probability.utils.stats import statistics, Stats
-from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -37,9 +39,10 @@ def plot_asymmetric_expected_signaling_probability(
     use_error_bars: bool = True,
     save: bool = True,
     d_fit_min: int | None = None,
+    mode: PlotMode = PlotMode.EXPLORE,
 ):
-    apply_plot_style()
-    plt.figure(figsize=(10, 6))
+    apply_plot_style(mode)
+    plt.figure()
 
     for all_stats, direction in [
         (all_stats_A_to_B, Direction.A_TO_B),
@@ -58,14 +61,12 @@ def plot_asymmetric_expected_signaling_probability(
     plt.yscale("log")
     plt.xlabel(r"$d_A$")
     plt.ylabel(LatexStrings.EXPECTED_SIGNALING_PROBABILITY_X_TO_Y)
-    plt.title(rf"Asymmetric Expected Signaling Probability ($d_B =$ {d_B}, $N =$ {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
+    plot_title(rf"Asymmetric Expected Signaling Probability ($d_B =$ {d_B}, $N =$ {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
     plt.legend()
     plt.tight_layout()
 
     if save:
-        filename = f"plots/asymmetric_expected_signaling_probability_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-        plt.savefig(filename, dpi=300, bbox_inches="tight")
-
+        save_plot("asymmetric_expected_signaling_probability")
     plt.show()
 
 
@@ -75,10 +76,12 @@ def main():
     d_A_max = 20
     d_B = 2
     d_fit_min = d_A_max // 2
+    plot_mode = PlotMode.PAPER
+
     all_stats_A_to_B = compute_asymmetric_expected_signaling_probability(n_samples, d_A_min, d_A_max, d_B, Direction.A_TO_B)
     all_stats_B_to_A = compute_asymmetric_expected_signaling_probability(n_samples, d_A_min, d_A_max, d_B, Direction.B_TO_A)
 
-    plot_asymmetric_expected_signaling_probability(all_stats_A_to_B, all_stats_B_to_A, d_B=d_B, d_fit_min=d_fit_min)
+    plot_asymmetric_expected_signaling_probability(all_stats_A_to_B, all_stats_B_to_A, d_B=d_B, d_fit_min=d_fit_min, mode=plot_mode)
 
 
 if __name__ == "__main__":

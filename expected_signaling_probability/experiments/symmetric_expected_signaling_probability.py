@@ -1,13 +1,15 @@
 from expected_signaling_probability.utils.plotting import (
+    PlotMode,
     apply_plot_style,
+    plot_title,
     LatexStrings,
     plot_scatter,
     plot_error_bars,
     plot_power_law_fit,
+    save_plot,
 )
 from expected_signaling_probability import expected_signaling_probability, Direction
 from expected_signaling_probability.utils.stats import statistics, Stats
-from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -27,11 +29,12 @@ def plot_symmetric_expected_signaling_probability(
     use_error_bars: bool = True,
     save: bool = True,
     d_fit_min: int | None = None,
+    mode: PlotMode = PlotMode.EXPLORE,
 ):
-    apply_plot_style()
+    apply_plot_style(mode)
     x = np.array([s.d_A for s in all_stats])
     y = np.array([s.mean for s in all_stats])
-    plt.figure(figsize=(10, 6))
+    plt.figure()
 
     label = LatexStrings.SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY
     plot_scatter(x, y, color="purple", label=label)
@@ -44,13 +47,12 @@ def plot_symmetric_expected_signaling_probability(
     plt.xlabel(r"$d$")
     plt.xticks(x, [str(int(d)) for d in x])
     plt.ylabel(label)
-    plt.title(f"Symmetric Expected Signaling Probability {label} ($N =$ {LatexStrings.n_samples_to_sci(all_stats[0].n)})")
+    plot_title(f"Symmetric Expected Signaling Probability {label} ($N =$ {LatexStrings.n_samples_to_sci(all_stats[0].n)})")
     plt.legend()
     plt.tight_layout()
 
     if save:
-        filename = f"plots/symmetric_expected_signaling_probability_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-        plt.savefig(filename, dpi=300, bbox_inches="tight")
+        save_plot("symmetric_expected_signaling_probability")
     plt.show()
 
 
@@ -58,9 +60,11 @@ def main():
     n_samples = 1_000
     d_min = 2
     d_max = 10
-    d_fit_min = d_max // 2
     all_stats = compute_symmetric_expected_signaling_probability(n_samples, d_min, d_max)
-    plot_symmetric_expected_signaling_probability(all_stats, d_fit_min=d_fit_min)
+
+    plot_mode = PlotMode.PAPER
+    d_fit_min = d_max // 2
+    plot_symmetric_expected_signaling_probability(all_stats, d_fit_min=d_fit_min, mode=plot_mode)
 
 
 if __name__ == "__main__":
