@@ -1,5 +1,6 @@
 from expected_signaling_probability.utils.fitting import fit_power_law
 from expected_signaling_probability.utils.stats import Stats
+from matplotlib.ticker import ScalarFormatter, NullFormatter
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -147,6 +148,15 @@ def save_plot(name: str, fmt: str | None = None):
 def plot_title(title: str):
     if _active_config.show_title:
         plt.title(title)
+
+
+def format_log_ticks():
+    ax = plt.gca()
+    formatter = ScalarFormatter()
+    formatter.set_scientific(False)
+    ax.xaxis.set_major_formatter(formatter)
+    ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))  # type: ignore[attr-defined]
 
 
 class LatexStrings:

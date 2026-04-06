@@ -2,6 +2,7 @@ from expected_signaling_probability.utils.plotting import (
     PlotMode,
     apply_plot_style,
     plot_title,
+    format_log_ticks,
     LatexStrings,
     plot_scatter,
     plot_error_bars,
@@ -44,8 +45,8 @@ def plot_symmetric_expected_signaling_probability(
 
     plt.xscale("log")
     plt.yscale("log")
+    format_log_ticks()
     plt.xlabel(r"$d$")
-    plt.xticks(x, [str(int(d)) for d in x])
     plt.ylabel(label)
     plot_title(f"Symmetric Expected Signaling Probability {label} ($N =$ {LatexStrings.n_samples_to_sci(all_stats[0].n)})")
     plt.legend()

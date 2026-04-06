@@ -2,6 +2,7 @@ from expected_signaling_probability.utils.plotting import (
     PlotMode,
     apply_plot_style,
     plot_title,
+    format_log_ticks,
     LatexStrings,
     plot_scatter,
     plot_error_bars,
@@ -58,6 +59,7 @@ def plot_asymmetric_expected_transmission_probability(
 
     plt.xscale("log")
     plt.yscale("log")
+    format_log_ticks()
     plt.xlabel(r"$d_A$")
     plt.ylabel(LatexStrings.EXPECTED_TRANSMISSION_PROBABILITY_X_TO_Y)
     plot_title(f"Asymmetric Expected Transmission Probability ($N =$ {LatexStrings.n_samples_to_sci(all_stats_A_to_B[0].n)})")
