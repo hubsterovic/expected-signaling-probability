@@ -75,7 +75,7 @@ def plot_asymmetric_expected_signaling_probability(
 def main():
     n_samples = 1_000
     d_A_min = 2
-    d_A_max = 16
+    d_A_max = 32
     d_B = 2
     d_fit_min = d_A_max // 2
     plot_mode = PlotMode.PAPER
