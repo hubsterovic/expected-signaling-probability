@@ -1,6 +1,7 @@
 from expected_signaling_probability.utils.directions import Direction
 from expected_signaling_probability.utils.params import ExtraParams
 from dataclasses import fields
+from enum import Enum
 from pathlib import Path
 import pandas as pd
 
@@ -19,7 +20,8 @@ class Cache:
         for field in fields(extra_params):
             value = getattr(extra_params, field.name)
             if value is not None:
-                filename_parts.append(f"{field.name}={value}")
+                serialized = value.value if isinstance(value, Enum) else value
+                filename_parts.append(f"{field.name}={serialized}")
 
         return " ".join(filename_parts) + ".csv"
 

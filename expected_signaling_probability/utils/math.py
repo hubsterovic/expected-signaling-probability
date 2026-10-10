@@ -1,4 +1,4 @@
-from expected_signaling_probability.utils.params import ExtraParams, DEFAULT_EXTRA_PARAMS
+from expected_signaling_probability.utils.params import ExtraParams, StateEnsemble, DEFAULT_EXTRA_PARAMS
 from expected_signaling_probability.utils.directions import Direction
 from expected_signaling_probability.utils.caching import (
     Cache, 
@@ -29,25 +29,39 @@ def _compute_signaling_probability(
     return tr_dist
 
 
-def generate_random_dm(d_A: int, d_B: int, seed: int | None = None) -> qt.Qobj:
+def generate_random_dm(d_A: int, d_B: int, seed: int | None = None, state_ensemble: StateEnsemble = StateEnsemble.GINIBRE) -> qt.Qobj:
+    if state_ensemble == StateEnsemble.PURE:
+        ket = qt.rand_ket(dimensions=[d_A, d_B], seed=seed)  # type: ignore
+        return ket * ket.dag()
+    if state_ensemble == StateEnsemble.PRODUCT:
+        ket_A = qt.rand_ket(d_A, seed=seed)  # type: ignore
+        ket_B = qt.rand_ket(d_B, seed=seed + 1 if seed is not None else None)  # type: ignore
+        return qt.tensor(ket_A * ket_A.dag(), ket_B * ket_B.dag())
     random_dm = qt.rand_dm(dimensions=[d_A, d_B], seed=seed)  # type: ignore
     return random_dm
 
 
+def _random_cptp_or_unitary(dimensions, seed, rank) -> qt.Qobj:
+    if rank == 1:
+        U = qt.rand_unitary(dimensions, seed=seed)  # type: ignore
+        return qt.to_super(U)
+    return qt.rand_super_bcsz(dimensions, seed=seed, rank=rank)  # type: ignore
+
+
 def generate_random_superoperator(d_A: int, d_B: int, seed: int | None = None, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> qt.Qobj:
-    return qt.rand_super_bcsz([d_A, d_B], seed=seed, rank=extra_params.superoperator_rank)  # type: ignore
+    return _random_cptp_or_unitary([d_A, d_B], seed, extra_params.superoperator_rank)
 
 
 def generate_random_local_superoperator(d_A: int, d_B: int, direction: Direction, seed: int | None = None, extra_params: ExtraParams = DEFAULT_EXTRA_PARAMS) -> qt.Qobj:
     if direction == Direction.A_TO_B:
         local_superoperator = qt.super_tensor(
-            qt.rand_super_bcsz(d_A, seed=seed, rank=extra_params.superoperator_rank),  # type: ignore
+            _random_cptp_or_unitary(d_A, seed, extra_params.superoperator_rank),
             qt.to_super(qt.identity(d_B)),
         )
     elif direction == Direction.B_TO_A:
         local_superoperator = qt.super_tensor(
             qt.to_super(qt.identity(d_A)),
-            qt.rand_super_bcsz(d_B, seed=seed, rank=extra_params.superoperator_rank),  # type: ignore
+            _random_cptp_or_unitary(d_B, seed, extra_params.superoperator_rank),
         )
     return local_superoperator
 
@@ -56,9 +70,9 @@ def _one_shot_signaling_probability(d_A: int, d_B: int, direction: Direction, se
     if cache and (cached_result := cache.get(d_A, d_B, direction, seed, extra_params)):
         return cached_result
 
-    initial_state = generate_random_dm(d_A, d_B, seed)
-    local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed, extra_params)
-    global_superoperator = generate_random_superoperator(d_A, d_B, seed, extra_params)
+    initial_state = generate_random_dm(d_A, d_B, seed=3 * seed, state_ensemble=extra_params.state_ensemble)
+    local_operation = generate_random_local_superoperator(d_A, d_B, direction, seed=3 * seed + 1, extra_params=extra_params)
+    global_superoperator = generate_random_superoperator(d_A, d_B, seed=3 * seed + 2, extra_params=extra_params)
     tr_dist = _compute_signaling_probability(initial_state, local_operation, global_superoperator, direction)
 
     if cache:
