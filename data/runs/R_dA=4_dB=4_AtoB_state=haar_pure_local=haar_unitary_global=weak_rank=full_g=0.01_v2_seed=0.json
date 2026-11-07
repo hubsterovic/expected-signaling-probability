@@ -1,0 +1,18 @@
+{
+  "config": {
+    "d_A": 4,
+    "d_B": 4,
+    "direction": "A to B",
+    "state": "haar_pure",
+    "local_op": "haar_unitary",
+    "global_op": "weak",
+    "global_rank": null,
+    "coupling": 0.01,
+    "quantity": "R",
+    "scheme": 2
+  },
+  "master_seed": 0,
+  "created": "2026-10-11T15:15:36+00:00",
+  "qutip": "5.2.1",
+  "git_commit": "d70fe48"
+}

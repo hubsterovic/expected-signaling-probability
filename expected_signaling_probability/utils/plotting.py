@@ -1,5 +1,4 @@
 from expected_signaling_probability.utils.fitting import fit_power_law
-from expected_signaling_probability.utils.stats import Stats
 from matplotlib.ticker import ScalarFormatter, NullFormatter
 from dataclasses import dataclass
 from datetime import datetime
@@ -164,6 +163,9 @@ class LatexStrings:
     EXPECTED_SIGNALING_PROBABILITY_A_TO_B = r"$\langle \mathcal{S} \rangle_{A \to B}$"
     EXPECTED_SIGNALING_PROBABILITY_B_TO_A = r"$\langle \mathcal{S} \rangle_{B \to A}$"
     SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY = r"$\langle \mathcal{S} \rangle$"
+    MEDIAN_RATIO = r"$\mathrm{med}\,(\mathcal{S}/\mathcal{T})$"
+    MEDIAN_RATIO_A_TO_B = r"$\mathrm{med}\,(\mathcal{S}/\mathcal{T})_{A \to B}$"
+    MEDIAN_RATIO_B_TO_A = r"$\mathrm{med}\,(\mathcal{S}/\mathcal{T})_{B \to A}$"
 
     EXPECTED_TRANSMISSION_PROBABILITY_X_TO_Y = r"$\langle \mathcal{T} \rangle_{X \to Y}$"
     EXPECTED_TRANSMISSION_PROBABILITY_A_TO_B = r"$\langle \mathcal{T} \rangle_{A \to B}$"
@@ -203,19 +205,21 @@ def plot_scatter(
 def plot_error_bars(
     x: np.typing.NDArray,
     y: np.typing.NDArray,
-    all_stats: list[Stats],
+    yerr_low: np.typing.NDArray,
+    yerr_high: np.typing.NDArray,
+    label: str = "",
+    color: str = "grey",
 ):
-    yerr_low = y - np.array([s.q25 for s in all_stats])
-    yerr_high = np.array([s.q75 for s in all_stats]) - y
+    """Asymmetric error bars given as distances below/above ``y``."""
     elinewidth = 0.6 if not _active_config.show_title else 1.0
     plt.errorbar(
         x,
         y,
         yerr=[yerr_low, yerr_high],
-        label=r"IQR" if _active_config.show_title else "_nolegend_",
+        label=label if (label and _active_config.show_title) else "_nolegend_",
         fmt="none",
         capsize=_active_config.capsize,
-        ecolor="grey",
+        ecolor=color,
         elinewidth=elinewidth,
         capthick=elinewidth,
         zorder=1,
