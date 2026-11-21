@@ -1,0 +1,18 @@
+{
+  "config": {
+    "d_A": 5,
+    "d_B": 5,
+    "direction": "A to B",
+    "state": "product_hs",
+    "local_op": "haar_unitary",
+    "global_op": "coms",
+    "global_rank": null,
+    "coupling": null,
+    "quantity": "R",
+    "scheme": 2
+  },
+  "master_seed": 0,
+  "created": "2026-11-21T10:58:29+00:00",
+  "qutip": "5.2.1",
+  "git_commit": "8a68da6"
+}

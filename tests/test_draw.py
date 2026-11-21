@@ -34,7 +34,7 @@ def test_draw_is_a_probability(direction, quantity, global_op):
     cfg = DrawConfig(d_A=3, d_B=2, direction=direction, quantity=quantity, global_op=global_op, coupling=1.0 if global_op is GlobalOpEnsemble.WEAK_COUPLING else None)
     v = draw(cfg, 0, 0)
     assert v >= 0.0
-    if quantity is not Quantity.RATIO:
+    if quantity not in (Quantity.RATIO, Quantity.RATIO_LOCAL):
         assert v <= 1.0
 
 
@@ -67,6 +67,18 @@ def test_ratio_matches_pointwise_signaling_over_transmission():
     t = draw(base.with_(quantity=Quantity.TRANSMISSION), 0, 4)
     r = draw(base.with_(quantity=Quantity.RATIO), 0, 4)
     assert abs(r - s / t) < 1e-12
+
+
+def test_local_sensitivity_and_its_ratio_are_consistent():
+    base = DrawConfig(d_A=3, d_B=2, global_op=GlobalOpEnsemble.COMS)
+    s = draw(base, 0, 4)
+    loc = draw(base.with_(quantity=Quantity.LOCAL), 0, 4)
+    rl = draw(base.with_(quantity=Quantity.RATIO_LOCAL), 0, 4)
+    assert abs(rl - s / loc) < 1e-12
+    # A product unitary is causal (S = 0) but Bob's own local change is visible (L > 0).
+    causal = DrawConfig(d_A=2, d_B=2, global_op=GlobalOpEnsemble.WEAK_COUPLING, coupling=0.0)
+    assert draw(causal, 0, 1) < 1e-9
+    assert draw(causal.with_(quantity=Quantity.LOCAL), 0, 1) > 1e-3
 
 
 def test_weak_coupling_is_causal_at_zero_coupling():

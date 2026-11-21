@@ -135,13 +135,15 @@ def apply_plot_style(mode: PlotMode = PlotMode.EXPLORE):
         print("[plot_styling] LaTeX not found. Using mathtext fallback.")
 
 
-def save_plot(name: str, fmt: str | None = None):
-    fmt = fmt or _active_config.save_format
+def save_plot(name: str, fmt: str | None = None, timestamped: bool = True):
+    """Save the current figure under ``plots/``; paper figures are saved un-timestamped as PDF and PNG."""
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = PLOTS_DIR / f"{name}_{timestamp}.{fmt}"
-    plt.savefig(filename)
-    print(f"[save_plot] Saved to {filename}")
+    stem = f"{name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}" if timestamped else name
+    fmts = [fmt] if fmt else ([_active_config.save_format, "png"] if not timestamped else [_active_config.save_format])
+    for f in dict.fromkeys(fmts):
+        filename = PLOTS_DIR / f"{stem}.{f}"
+        plt.savefig(filename)
+        print(f"[save_plot] Saved to {filename}")
 
 
 def plot_title(title: str):
@@ -189,6 +191,7 @@ def plot_scatter(
     *,
     color: str,
     label: str,
+    marker: str = "o",
 ):
     fill_kwargs = (
         {"color": color}
@@ -196,7 +199,7 @@ def plot_scatter(
         else {"facecolors": "none", "edgecolors": color, "linewidths": 0.8}
     )
     plt.scatter(
-        x, y, s=_active_config.marker_size, zorder=2,
+        x, y, s=_active_config.marker_size, zorder=2, marker=marker,
         label=rf"Data: {label}" if _active_config.show_title else "_nolegend_",
         **fill_kwargs,  # type: ignore[arg-type]
     )

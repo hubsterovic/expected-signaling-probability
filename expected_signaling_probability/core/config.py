@@ -18,6 +18,8 @@ class Quantity(str, Enum):
     SIGNALING = "S"     # D_tr( Tr_X E(rho), Tr_X E(A_X(rho)) )
     TRANSMISSION = "T"  # D_tr( Tr_X E(rho_1), Tr_X E(rho_2) ), rho_1, rho_2 independent; erasure baseline
     RATIO = "R"         # S / T evaluated pointwise on the same (rho, E); report the median
+    LOCAL = "L"         # D_tr( Tr_X E(rho), Tr_X E(A_X(rho)) ) with the local op on the RECEIVER X: the receiver's own-side sensitivity
+    RATIO_LOCAL = "RL"  # S / L evaluated pointwise on the same (rho, E); 1 means Alice's intervention is as visible to Bob as his own
 
 
 @dataclass(frozen=True)
