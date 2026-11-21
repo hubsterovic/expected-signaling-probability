@@ -9,7 +9,6 @@ from expected_signaling_probability.experiments.common import (
     GLOBAL_OP_LABEL,
     MASTER_SEED,
     N_SAMPLES,
-    PAPER_GLOBAL_OPS,
     Curve,
     Figure,
     PlotMode,
@@ -25,24 +24,25 @@ D_FIT_MIN = 5
 BASE = DrawConfig(d_A=2, d_B=2, direction=Direction.A_TO_B)  # Haar pure state, Haar unitary local op
 
 
-def curves(n_samples: int = N_SAMPLES, global_ops=PAPER_GLOBAL_OPS) -> list[Curve]:
+def curves(n_samples: int = N_SAMPLES, global_ops=(GlobalOpEnsemble.BCSZ,)) -> list[Curve]:
     out: list[Curve] = []
     for k, g in enumerate(global_ops):
         cfgs = symmetric_configs(BASE.with_(global_op=g), D_MIN, D_MAX[g])
         s = sweep(cfgs, n_samples, MASTER_SEED)
         t = sweep([c.with_(quantity=Quantity.TRANSMISSION) for c in cfgs], n_samples, MASTER_SEED)
-        out.append(Curve(label=rf"$\langle\mathcal{{S}}\rangle$ {GLOBAL_OP_LABEL[g]}", color=GLOBAL_OP_COLOR[g], samples=s))
-        t_label = r"$\langle\mathcal{T}\rangle$, same ensemble (dotted)" if k == 0 else "_nolegend_"
+        s_label = r"$\langle\mathcal{S}\rangle$" + (f" {GLOBAL_OP_LABEL[g]}" if len(global_ops) > 1 else "")
+        out.append(Curve(label=s_label, color=GLOBAL_OP_COLOR[g], samples=s))
+        t_label = (r"$\langle\mathcal{T}\rangle$" + (" (dotted)" if len(global_ops) > 1 else "")) if k == 0 else "_nolegend_"
         out.append(Curve(label=t_label, color=GLOBAL_OP_COLOR[g], samples=t, marker="s", linestyle=":", fit=False))
     return out
 
 
-def main(n_samples: int = N_SAMPLES, mode: PlotMode = PlotMode.PAPER):
-    cs = curves(n_samples)
+def main(n_samples: int = N_SAMPLES, mode: PlotMode = PlotMode.PAPER, global_ops=(GlobalOpEnsemble.BCSZ,), suffix: str = ""):
+    cs = curves(n_samples, global_ops)
     print_summary(cs)
     plot_figure(
         Figure(
-            name="fig_symmetric",
+            name=f"fig_symmetric{suffix}",
             curves=cs,
             xlabel=r"$d$",
             ylabel=LatexStrings.SYMMETRIC_EXPECTED_SIGNALING_PROBABILITY + ", " + LatexStrings.SYMMETRIC_EXPECTED_TRANSMISSION_PROBABILITY,

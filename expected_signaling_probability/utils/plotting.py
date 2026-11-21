@@ -237,6 +237,7 @@ def plot_power_law_fit(
     probability_label: str,
     dim_var: str = "d",
     d_fit_min: int | None = None,
+    exponent_in_label: bool = True,
 ):
     if d_fit_min is not None:
         mask = x >= d_fit_min
@@ -249,8 +250,10 @@ def plot_power_law_fit(
     if _active_config.show_title:
         fit_range = rf" (${dim_var} \geq {d_fit_min}$)" if d_fit_min is not None else ""
         fit_label = rf"Fit{fit_range}: {probability_label} $ \propto {dim_var}^{{{fit.slope:.2f} \pm {fit.stderr:.2f}}}$"
-    else:
+    elif exponent_in_label:
         fit_label = rf"{probability_label} $ \propto {dim_var}^{{{fit.slope:.2f} \pm {fit.stderr:.2f}}}$"
+    else:
+        fit_label = probability_label
 
     plt.plot(
         fit.x_fit,

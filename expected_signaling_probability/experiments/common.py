@@ -112,14 +112,14 @@ class Figure:
     extra: dict = field(default_factory=dict)
 
 
-def draw_curves(curves: list[Curve], *, error_bar: str, dim_var: str, d_fit_min: int | None, log_y: bool, xlabel: str, ylabel: str) -> None:
+def draw_curves(curves: list[Curve], *, error_bar: str, dim_var: str, d_fit_min: int | None, log_y: bool, xlabel: str, ylabel: str, exponent_in_label: bool = True) -> None:
     """Draw ``curves`` on the current axes."""
     for k, c in enumerate(curves):
         x, y = c.x, c.y
         err_label = "" if k else error_bar.upper()
         plot_scatter(x, y, color=c.color, label=c.label, marker=c.marker)
         if c.fit:
-            plot_power_law_fit(x, y, color=c.color, probability_label=c.label, dim_var=dim_var, d_fit_min=d_fit_min)
+            plot_power_law_fit(x, y, color=c.color, probability_label=c.label, dim_var=dim_var, d_fit_min=d_fit_min, exponent_in_label=exponent_in_label)
         else:
             plt.plot(x, y, linestyle=c.linestyle, color=c.color, label=c.label, alpha=0.8)
         if error_bar == ErrorBar.SEM:
