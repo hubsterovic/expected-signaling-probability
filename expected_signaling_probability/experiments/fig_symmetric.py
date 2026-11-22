@@ -6,6 +6,7 @@ exactly as fast as the transmission does, and in the unitary case neither decays
 from expected_signaling_probability import Direction, DrawConfig, GlobalOpEnsemble, Quantity, sweep
 from expected_signaling_probability.experiments.common import (
     GLOBAL_OP_COLOR,
+    SYMMETRIC_COLOR,
     GLOBAL_OP_LABEL,
     MASTER_SEED,
     N_SAMPLES,
@@ -30,10 +31,11 @@ def curves(n_samples: int = N_SAMPLES, global_ops=(GlobalOpEnsemble.BCSZ,)) -> l
         cfgs = symmetric_configs(BASE.with_(global_op=g), D_MIN, D_MAX[g])
         s = sweep(cfgs, n_samples, MASTER_SEED)
         t = sweep([c.with_(quantity=Quantity.TRANSMISSION) for c in cfgs], n_samples, MASTER_SEED)
+        color = GLOBAL_OP_COLOR[g] if len(global_ops) > 1 else SYMMETRIC_COLOR
         s_label = r"$\langle\mathcal{S}\rangle$" + (f" {GLOBAL_OP_LABEL[g]}" if len(global_ops) > 1 else "")
-        out.append(Curve(label=s_label, color=GLOBAL_OP_COLOR[g], samples=s))
+        out.append(Curve(label=s_label, color=color, samples=s))
         t_label = (r"$\langle\mathcal{T}\rangle$" + (" (dotted)" if len(global_ops) > 1 else "")) if k == 0 else "_nolegend_"
-        out.append(Curve(label=t_label, color=GLOBAL_OP_COLOR[g], samples=t, marker="s", linestyle=":", fit=False))
+        out.append(Curve(label=t_label, color=color, samples=t, marker="s", linestyle=":", fit=False))
     return out
 
 

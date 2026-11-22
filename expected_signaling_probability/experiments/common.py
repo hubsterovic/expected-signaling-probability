@@ -38,6 +38,7 @@ GLOBAL_OP_COLOR = {
     GlobalOpEnsemble.BCSZ: "tab:red",
     GlobalOpEnsemble.WEAK_COUPLING: "tab:purple",
 }
+SYMMETRIC_COLOR = "tab:purple"  # single-ensemble symmetric figures; blue/red are reserved for A->B / B->A
 PAPER_GLOBAL_OPS = (GlobalOpEnsemble.HAAR_UNITARY, GlobalOpEnsemble.COMS, GlobalOpEnsemble.BCSZ)
 
 
