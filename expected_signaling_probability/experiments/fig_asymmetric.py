@@ -60,7 +60,9 @@ def draw_page_guides(g: GlobalOpEnsemble, curves: list[Curve]) -> None:
 def main(n_samples: int = N_SAMPLES, mode: PlotMode = PlotMode.PAPER, global_ops=(GlobalOpEnsemble.BCSZ,), suffix: str = ""):
     apply_plot_style(mode)
     w, h = plt.rcParams["figure.figsize"]
-    fig, axes = plt.subplots(1, len(global_ops), figsize=(w * len(global_ops), h), sharey=False)
+    n = len(global_ops)
+    width = min(n, 2) * w  # at most the text width (two columns), so fonts print at their nominal size
+    fig, axes = plt.subplots(1, n, figsize=(width, h), sharey=False)
     for ax, g in zip(np.atleast_1d(axes), global_ops):
         plt.sca(ax)
         cs = panel_curves(g, n_samples)
@@ -70,10 +72,16 @@ def main(n_samples: int = N_SAMPLES, mode: PlotMode = PlotMode.PAPER, global_ops
         if len(global_ops) > 1:
             ax.set_title(GLOBAL_OP_LABEL[g])
         ax.set_xticks([t for t in (2, 4, 8, 16, 32) if t <= D_A_MAX[g]])
-        ax.legend(loc="lower left")
+        if n == 1:
+            ax.legend(loc="lower left")
     np.atleast_1d(axes)[0].set_ylabel(LatexStrings.EXPECTED_SIGNALING_PROBABILITY_X_TO_Y + ", " + LatexStrings.EXPECTED_TRANSMISSION_PROBABILITY_X_TO_Y)
     plot_title(rf"Asymmetric, $d_B = {D_B}$, mean with SEM ($N = {n_samples}$)")
-    plt.tight_layout()
+    if n > 1:  # one legend for all panels, below the axes
+        handles, labels = np.atleast_1d(axes)[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="lower center", ncol=len(labels), frameon=False, bbox_to_anchor=(0.5, 0.0))
+        plt.tight_layout(rect=(0, 0.1, 1, 1))
+    else:
+        plt.tight_layout()
     save_plot(f"fig_asymmetric{suffix}", timestamped=mode is PlotMode.EXPLORE)
     plt.close(fig)
 
